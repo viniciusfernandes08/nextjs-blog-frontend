@@ -6,15 +6,15 @@ import { InputCheckbox } from "@/components/InputCheckbox";
 import { MarkdownEditor } from "@/components/MarkdownEditor";
 import { useActionState, useEffect, useState } from "react";
 import { ImageUploader } from "../ImageUploader";
-import { makePartialPublicPost, PublicPostModel } from "@/dto/post/dto";
 import { createPostAction } from "@/actions/post/create-post-action";
 import { toast } from "react-toastify";
 import { updatePostAction } from "@/actions/post/update-post-action";
 import { useRouter, useSearchParams } from "next/navigation";
+import { PublicPostForApiDto, PublicPostForApiSchema } from "@/lib/posts/schemas";
 
 type UpdateProps = {
   mode: 'update'
-  publicPost: PublicPostModel
+  publicPost: PublicPostForApiDto
 }
 
 type CreateProps = {
@@ -40,7 +40,7 @@ export function ManagePostForm(props: Props) {
   }
 
   const initialState = {
-    formState: makePartialPublicPost(publicPost),
+    formState: PublicPostForApiSchema.parse(publicPost || {}),
     errors: [],
   }
   const [state, action, isPending] = useActionState(
@@ -98,15 +98,6 @@ export function ManagePostForm(props: Props) {
               />
 
               <Input
-                labelText="Autor"
-                name="author"
-                placeholder="Digite o nome do autor"
-                type="text"
-                defaultValue={formState.author}
-                disabled={isPending}
-              />
-
-              <Input
                 labelText="Título"
                 name="title"
                 placeholder="Digite o título"
@@ -143,13 +134,15 @@ export function ManagePostForm(props: Props) {
                 disabled={isPending}
               />
 
-              <InputCheckbox
-                labelText="Publicar?"
-                name="published"
-                type="checkbox" 
-                defaultChecked={formState.published}
-                disabled={isPending}
-              />
+              {mode === 'update' && (
+                <InputCheckbox
+                  labelText='Publicar?'
+                  name='published'
+                  type='checkbox'
+                  defaultChecked={formState.published}
+                  disabled={isPending}
+                />
+              )}
         
               <div className="mt-4">
                 <Button type="submit" variant="default" disabled={isPending}>
