@@ -1,15 +1,22 @@
-import { postRepository } from "@/repositories/post"
 import Image from "next/image"
 import { PostHeading } from "../PostHeading"
 import { PostDate } from "../PostDate"
 import { SafeMarkdown } from "../SafeMarkdown"
+import { findPublicPostBySlugFromApiCached } from "@/lib/posts/queries/public"
+import { notFound } from "next/navigation"
 
 interface SinglePostProps {
     slug: string
 }
 
 export async function SinglePost({slug}: SinglePostProps) {
-    const post = await postRepository.findBySlugPublic(slug)
+    const res = await findPublicPostBySlugFromApiCached(slug);
+
+    if (!res.success) {
+        notFound();
+    }
+
+    const post = res.data;
 
     return (
         <article>
@@ -23,7 +30,7 @@ export async function SinglePost({slug}: SinglePostProps) {
 
                 <PostHeading url={`/post/${post.slug}`}>{post.title}</PostHeading>
 
-                <p>{post.author} | <PostDate datetime={post.createdAt} /></p>
+                <p>{post.author.name} | <PostDate datetime={post.createdAt} /></p>
             </header>
 
             <p className="text-xl mb-4">{post.excerpt}</p>
